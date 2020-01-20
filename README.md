@@ -9,5 +9,6 @@ Teensy tested i2c devices
 6.	MB85RC256V (FRAM address will be 0x50): https://github.com/adafruit/Adafruit_FRAM_I2C [ and FRAM chip has a special ID feature which appears at 0x7C.
 
 
-Alternate Libraries
+## Alternate Libraries
+
 Arduino library for I2C FRAM - Fujitsu MB85RC & Cypress FM24, CY15B,  https: //github.com/mjs513/FRAM_MB85RC_I2C. This is a modification of the original library so you can select which wire port you want to use.
