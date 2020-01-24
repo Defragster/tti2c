@@ -34,42 +34,42 @@
     Constructor
 */
 /**************************************************************************/
-FRAM_MB85RC_I2C::FRAM_MB85RC_I2C(TwoWire *theWire) 
+FRAM_MB85RC_I2C::FRAM_MB85RC_I2C(TwoWire &theWire) 
 {
 		_framInitialised = false;
 		_manualMode = false;
 		i2c_addr = MB85RC_DEFAULT_ADDRESS;
 		wpPin = DEFAULT_WP_PIN;
-		_wire = theWire;
+		_wire = &theWire;
 
 		byte result = FRAM_MB85RC_I2C::initWP(DEFAULT_WP_STATUS);
 
 }
 
-FRAM_MB85RC_I2C::FRAM_MB85RC_I2C(uint8_t address, boolean wp, TwoWire *theWire) 
+FRAM_MB85RC_I2C::FRAM_MB85RC_I2C(uint8_t address, boolean wp, TwoWire &theWire) 
 {
 		_framInitialised = false;
 		_manualMode = false;
 		i2c_addr = address;
 		wpPin = DEFAULT_WP_PIN;
-		_wire = theWire;
+		_wire = &theWire;
 
 		byte result = FRAM_MB85RC_I2C::initWP(wp);
 }
 
-FRAM_MB85RC_I2C::FRAM_MB85RC_I2C(uint8_t address, boolean wp, int pin, TwoWire *theWire) 
+FRAM_MB85RC_I2C::FRAM_MB85RC_I2C(uint8_t address, boolean wp, int pin, TwoWire &theWire) 
 {
 		_framInitialised = false;
 		_manualMode = false;
 		i2c_addr = address;
 		wpPin = pin;
-		_wire = theWire;
+		_wire = &theWire;
 		
 		byte result = FRAM_MB85RC_I2C::initWP(wp);
 		
 }
 
-FRAM_MB85RC_I2C::FRAM_MB85RC_I2C(uint8_t address, boolean wp, int pin, uint16_t chipDensity, TwoWire *theWire) 
+FRAM_MB85RC_I2C::FRAM_MB85RC_I2C(uint8_t address, boolean wp, int pin, uint16_t chipDensity, TwoWire &theWire) 
 {
 		//This constructor provides capability for chips without the device IDs implemented
 		_framInitialised = false;
@@ -77,7 +77,7 @@ FRAM_MB85RC_I2C::FRAM_MB85RC_I2C(uint8_t address, boolean wp, int pin, uint16_t 
 		i2c_addr = address;
 		wpPin = pin;
 		density = chipDensity;
-		_wire = theWire;
+		_wire = &theWire;
 
 		byte result = FRAM_MB85RC_I2C::initWP(wp);
 		
@@ -171,26 +171,23 @@ byte FRAM_MB85RC_I2C::writeArray (uint16_t framAddr, byte items, uint8_t values[
 {	
 	if ((framAddr >= maxaddress) || ((framAddr + (uint16_t) items - 1) >= maxaddress)) return ERROR_11;
 	
-	/*
-	FRAM_MB85RC_I2C::I2CAddressAdapt(framAddr);
-	for (byte i=0; i < items ; i++) {
-		_wire ->write(values[i]);
-	}
-	return _wire ->endTransmission(); */
-	
 	uint8_t error;
 	uint16_t bytes_remaining = items % i2c_buffer_length;
 	uint16_t packets2send = (items -  bytes_remaining)/i2c_buffer_length;
+
 	uint16_t byteCnt = 0;
 	
 	//Serial.printf("BufferLe: %d, items: %d, remaining: %d, 2send: %d\n", i2c_buffer_length, items, bytes_remaining, packets2send);
 
 	if(packets2send > 0){
 		for(int j = 0; j < packets2send; j++){
-			FRAM_MB85RC_I2C::I2CAddressAdapt(framAddr + byteCnt);
+			FRAM_MB85RC_I2C::I2CAddressAdapt(framAddr + j*i2c_buffer_length);
 			for (int i=0; i < i2c_buffer_length ; i++) {
-				//Serial.printf("0x%x: Packet: %d, i: %d, index: %d, value: %d\n",framAddr+i, j, i, i+(j*i2c_buffer_length),values[i+(j*i2c_buffer_length)]); 
-				_wire ->write(values[i+(j*i2c_buffer_length)]);
+				//Serial.printf("0x%x: Packet: %d, i: %d, index: %d, value: %d\n",
+				//	framAddr + j*i2c_buffer_length+i, j, i, 
+				//	i+(j*i2c_buffer_length),
+				//	values[i+(j*(i2c_buffer_length-1))]); 
+				_wire ->write(values[i+(j*(i2c_buffer_length-1))]);
 				byteCnt = byteCnt + 1;
 			}
 			error = _wire ->endTransmission();
@@ -207,6 +204,7 @@ byte FRAM_MB85RC_I2C::writeArray (uint16_t framAddr, byte items, uint8_t values[
 	error = _wire ->endTransmission();
 	
 	return error;
+	
 }
 
 /**************************************************************************/
@@ -251,22 +249,6 @@ byte FRAM_MB85RC_I2C::writeByte (uint16_t framAddr, uint8_t value)
 byte FRAM_MB85RC_I2C::readArray (uint16_t framAddr, byte items, uint8_t values[])
 {
 	if ((framAddr >= maxaddress) || ((framAddr + (uint16_t) items - 1) >= maxaddress)) return ERROR_11;
-/*
-	byte result;
-	if (items == 0) {
-		result = ERROR_8; //number of bytes asked to read null
-	}
-	else {
-		FRAM_MB85RC_I2C::I2CAddressAdapt(framAddr);
-		result = _wire ->endTransmission();
-		
-		_wire ->requestFrom(i2c_addr, (uint8_t)items);
-		for (byte i=0; i < items; i++) {
-			values[i] = _wire ->read();
-		}
-	}
-	return result;
-*/
 
 	uint16_t dataSpot = 0; //Start at the beginning of shtpData array
 

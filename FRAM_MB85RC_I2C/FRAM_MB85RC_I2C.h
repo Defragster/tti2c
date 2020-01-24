@@ -61,7 +61,7 @@
 
 // Enabling debug I2C - comment to disable / normal operations
 #ifndef SERIAL_DEBUG
-//#define SERIAL_DEBUG 1
+  #define SERIAL_DEBUG 1
 #endif
 
 #define i2c_buffer_length 30
@@ -135,10 +135,10 @@
 
 class FRAM_MB85RC_I2C {
  public:
-	FRAM_MB85RC_I2C(TwoWire *theWire = &Wire);
-	FRAM_MB85RC_I2C(uint8_t address, boolean wp, TwoWire *theWire = &Wire);
-	FRAM_MB85RC_I2C(uint8_t address, boolean wp, int pin, TwoWire *theWire = &Wire);
-	FRAM_MB85RC_I2C(uint8_t address, boolean wp, int pin, uint16_t chipDensity, TwoWire *theWire = &Wire);
+	FRAM_MB85RC_I2C(TwoWire &theWire = Wire);
+	FRAM_MB85RC_I2C(uint8_t address, boolean wp, TwoWire &theWire = Wire);
+	FRAM_MB85RC_I2C(uint8_t address, boolean wp, int pin, TwoWire &theWire = Wire);
+	FRAM_MB85RC_I2C(uint8_t address, boolean wp, int pin, uint16_t chipDensity, TwoWire &theWire = Wire);
 	
 	void	begin(void);
 	byte	checkDevice(void);
