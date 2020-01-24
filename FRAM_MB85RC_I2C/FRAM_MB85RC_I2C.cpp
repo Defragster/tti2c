@@ -89,6 +89,7 @@ FRAM_MB85RC_I2C::FRAM_MB85RC_I2C(uint8_t address, boolean wp, int pin, uint16_t 
 /*========================================================================*/
 
 void FRAM_MB85RC_I2C::begin() {
+	_wire -> begin();
 	
 	byte deviceFound = FRAM_MB85RC_I2C::checkDevice();
 
