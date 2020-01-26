@@ -111,7 +111,7 @@ void loop()
       operating manual for instructions.
   */
   uint16_t distance =  myLidarLite.distance(loop_count == 0);
-  if (distance != last_distance) {
+  if ( distance > last_distance + 2 || distance < last_distance - 2 ) {
     last_distance = distance;
     display.clearDisplay();
     display.setCursor(0, 0);            // Start at top-left corner
