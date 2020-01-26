@@ -1,13 +1,27 @@
+#include <Wire.h>
 #define _use_9250
 #define _use_BNO055
 #define _use_BNO080
 #define _use_lidar
+//#define _use_ssd1306
+const TwoWire *DisplayWire = &Wire1;
 
 #if defined( _use_9250)
-  #include "MPU9250.h"
-  // an MPU9250 object with the MPU-9250 sensor on I2C bus 0 with address 0x68
-  MPU9250 IMU(Wire, 0x68);
-  int status;
+#include "MPU9250.h"
+// an MPU9250 object with the MPU-9250 sensor on I2C bus 0 with address 0x68
+MPU9250 IMU(Wire, 0x68);
+int status;
+#endif
+#if defined ( _use_ssd1306 )
+#include <Adafruit_SSD1306.h>
+//#include <splash.h>
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+
+// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, DisplayWire, OLED_RESET);
+
 #endif
 
 #if defined( _use_BNO055)
@@ -20,7 +34,7 @@
 
 // Check I2C device address and correct line below (by default address is 0x29 or 0x28)
 //                                   id, address
-Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x28, &Wire);
+Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x29, &Wire);
 #endif
 
 #if defined( _use_BNO080)
@@ -36,19 +50,18 @@ LIDARLite myLidarLite;
 void setup() {
   // serial to display data
   Serial.begin(115200);
-  while(!Serial) {}
-
+  while (!Serial) {}
 #if defined(_use_9250)
-  // start communication with IMU 
+  // start communication with IMU
   status = IMU.begin();
   if (status < 0) {
     Serial.println("IMU initialization unsuccessful");
     Serial.println("Check IMU wiring or try cycling power");
     Serial.print("Status: ");
     Serial.println(status);
-    while(1) {}
+    while (1) {}
   }
-  // setting the accelerometer full scale range to +/-8G 
+  // setting the accelerometer full scale range to +/-8G
   IMU.setAccelRange(MPU9250::ACCEL_RANGE_8G);
   // setting the gyroscope full scale range to +/-500 deg/s
   IMU.setGyroRange(MPU9250::GYRO_RANGE_500DPS);
@@ -59,14 +72,30 @@ void setup() {
 #endif
 
 #if defined(_use_BNO055)
-  /* Initialise the sensor */  
-    //max
-  if(!bno.begin())
+  /* Initialise the sensor */
+  //max
+  if (!bno.begin())
   {
     /* There was a problem detecting the BNO055 ... check your connections */
     Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
-    while(1);
+    while (1);
   }
+#if defined ( _use_ssd1306 )
+  //DisplayWire->begin();
+  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3D for 128x64
+    Serial.println(F("SSD1306 allocation failed"));
+  }
+  delay(500);
+  display.clearDisplay();
+  display.setTextSize(2);             // Normal 1:1 pixel scale
+  display.setTextColor(SSD1306_WHITE);        // Draw white text
+  display.setCursor(0, 0);            // Start at top-left corner
+  display.println(F("Hello"));
+  display.display();
+  
+#endif
+
 
   delay(1000);
 
@@ -131,25 +160,25 @@ void loop9250() {
   IMU.readSensor();
 
   // display the data
-  Serial.print(IMU.getAccelX_mss(),6);
+  Serial.print(IMU.getAccelX_mss(), 6);
   Serial.print("\t");
-  Serial.print(IMU.getAccelY_mss(),6);
+  Serial.print(IMU.getAccelY_mss(), 6);
   Serial.print("\t");
-  Serial.print(IMU.getAccelZ_mss(),6);
+  Serial.print(IMU.getAccelZ_mss(), 6);
   Serial.print("\t");
-  Serial.print(IMU.getGyroX_rads(),6);
+  Serial.print(IMU.getGyroX_rads(), 6);
   Serial.print("\t");
-  Serial.print(IMU.getGyroY_rads(),6);
+  Serial.print(IMU.getGyroY_rads(), 6);
   Serial.print("\t");
-  Serial.print(IMU.getGyroZ_rads(),6);
+  Serial.print(IMU.getGyroZ_rads(), 6);
   Serial.print("\t");
-  Serial.print(IMU.getMagX_uT(),6);
+  Serial.print(IMU.getMagX_uT(), 6);
   Serial.print("\t");
-  Serial.print(IMU.getMagY_uT(),6);
+  Serial.print(IMU.getMagY_uT(), 6);
   Serial.print("\t");
-  Serial.print(IMU.getMagZ_uT(),6);
+  Serial.print(IMU.getMagZ_uT(), 6);
   Serial.print("\t");
-  Serial.println(IMU.getTemperature_C(),6);
+  Serial.println(IMU.getTemperature_C(), 6);
   delay(20);
 }
 #endif
@@ -176,17 +205,17 @@ void loop055(void)
   Serial.print("\t\t");
 
   /*
-  // Quaternion data
-  imu::Quaternion quat = bno.getQuat();
-  Serial.print("qW: ");
-  Serial.print(quat.w(), 4);
-  Serial.print(" qX: ");
-  Serial.print(quat.x(), 4);
-  Serial.print(" qY: ");
-  Serial.print(quat.y(), 4);
-  Serial.print(" qZ: ");
-  Serial.print(quat.z(), 4);
-  Serial.print("\t\t");
+    // Quaternion data
+    imu::Quaternion quat = bno.getQuat();
+    Serial.print("qW: ");
+    Serial.print(quat.w(), 4);
+    Serial.print(" qX: ");
+    Serial.print(quat.x(), 4);
+    Serial.print(" qY: ");
+    Serial.print(quat.y(), 4);
+    Serial.print(" qZ: ");
+    Serial.print(quat.z(), 4);
+    Serial.print("\t\t");
   */
 
   /* Display calibration status for each sensor. */
@@ -255,7 +284,7 @@ void looplidar()
   Serial.println(myLidarLite.distance());
 
   // Take 99 measurements without receiver bias correction and print to serial terminal
-  for(int i = 0; i < 99; i++)
+  for (int i = 0; i < 99; i++)
   {
     Serial.println(myLidarLite.distance(false));
   }
