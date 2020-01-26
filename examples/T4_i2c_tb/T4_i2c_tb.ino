@@ -3,8 +3,8 @@
 #define _use_BNO055
 #define _use_BNO080
 #define _use_lidar
-//#define _use_ssd1306
-const TwoWire *DisplayWire = &Wire1;
+#define _use_ssd1306
+TwoWire *DisplayWire = &Wire1;
 
 #if defined( _use_9250)
 #include "MPU9250.h"
@@ -20,7 +20,7 @@ int status;
 
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 #define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, DisplayWire, OLED_RESET);
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire1, OLED_RESET);
 
 #endif
 
