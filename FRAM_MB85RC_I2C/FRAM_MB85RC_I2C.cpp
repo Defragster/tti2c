@@ -41,7 +41,7 @@ FRAM_MB85RC_I2C::FRAM_MB85RC_I2C(TwoWire &theWire)
 		i2c_addr = MB85RC_DEFAULT_ADDRESS;
 		wpPin = DEFAULT_WP_PIN;
 		_wire = &theWire;
-
+			
 		byte result = FRAM_MB85RC_I2C::initWP(DEFAULT_WP_STATUS);
 
 }
@@ -53,7 +53,7 @@ FRAM_MB85RC_I2C::FRAM_MB85RC_I2C(uint8_t address, boolean wp, TwoWire &theWire)
 		i2c_addr = address;
 		wpPin = DEFAULT_WP_PIN;
 		_wire = &theWire;
-
+		
 		byte result = FRAM_MB85RC_I2C::initWP(wp);
 }
 
@@ -89,8 +89,9 @@ FRAM_MB85RC_I2C::FRAM_MB85RC_I2C(uint8_t address, boolean wp, int pin, uint16_t 
 /*========================================================================*/
 
 void FRAM_MB85RC_I2C::begin() {
-	_wire -> begin();
 	
+	_wire -> begin();
+
 	byte deviceFound = FRAM_MB85RC_I2C::checkDevice();
 
     #if defined(SERIAL_DEBUG) && (SERIAL_DEBUG == 1)
