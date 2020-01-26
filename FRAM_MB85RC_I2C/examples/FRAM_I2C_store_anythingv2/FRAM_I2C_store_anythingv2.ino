@@ -39,7 +39,7 @@ MYDATA4I2C_t mydata; //data to be written in memory
 MYDATA4I2C_t readdata; //data read from memory
 
 //random address to write from
-uint16_t writeaddress = 0x080;
+uint16_t writeaddress = 0x025;
 uint16_t writeaddress2 = (256 * 128) - 80; // calculated regarding density to hit more or less the end of memory map
 byte resultw, resultr; 
 
@@ -50,14 +50,16 @@ void setup() {
 
 	Serial.begin(9600);
 	while (!Serial) ; //wait until Serial ready
-	Wire.begin();
+	//Wire.begin();
+  
 	
 	byte arraySize = sizeof(MYDATA_t);
 	
     Serial.println("Starting...");
 		
 	mymemory.begin();
-  ///mymemory.eraseDevice();
+ Wire.setClock(1000000);
+  //mymemory.eraseDevice();
 	
 //---------init data - load array
 	mydata.datastruct.data_0 = true;
@@ -78,7 +80,7 @@ void setup() {
 	Serial.println(mydata.datastruct.data_4, HEX);
 
   //string test
-  String string_test = "The Quick Brown Fox";
+  String string_test = "The Quick Brown Fox Jumped";
   char cbuff[string_test.length()+1];
   string_test.toCharArray(cbuff, string_test.length()+1);
   for(uint8_t j=0; j <string_test.length()+1; j++){
