@@ -1,9 +1,10 @@
 #include <Wire.h>
 #define _use_9250
 #define _use_BNO055
-//#define _use_BNO080
+#define _use_BNO080
 #define _use_lidar
 #define _use_MB85
+//Uncomment next line to write data to FRAM
 //#define _write_init_MB85
 uint16_t writeaddress = 0x025;
 
@@ -14,7 +15,7 @@ const TwoWire *DisplayWire = &Wire1;
 #define _BNO055_port  Wire
 #define _BNO080_port  Wire
 #define _LIDAR_port   Wire
-#define _MB85_port    Wire1
+#define _MB85_port    Wire
 
 #if defined(_use_MB85)
 #include <math.h>
@@ -220,7 +221,9 @@ void setup() {
 #endif
 
 #if defined(_use_BNO080)
-  if (myIMU.begin(BNO080_DEFAULT_ADDRESS, _BNO080_port) == false)
+  delay(200);
+  _BNO080_port.begin();
+  if (myIMU.begin(0x4B, _BNO080_port) == false)
   {
     Serial.println("BNO080 not detected at default I2C address. Check your jumpers and the hookup guide. Freezing...");
     while (1);
@@ -473,6 +476,7 @@ void loopMB85()
   Serial.print(", 0x");
   Serial.println(readdata.datastruct.data_4, HEX);
   Serial.print("Data_5: ");
+  //had to hard code string len if i dont want to keep writing to the FRAM
   for(uint8_t j = 0; j < 19+1; j++){
     Serial.print(readdata.datastruct.data_5[j]);
   }
