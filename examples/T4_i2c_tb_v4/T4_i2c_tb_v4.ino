@@ -11,7 +11,7 @@ WDT_T4<WDT2> wdt;
 uint16_t writeaddress = 0x025;
 
 #define _use_ssd1306
-const TwoWire *DisplayWire = &Wire1;
+TwoWire *DisplayWire = &Wire1;
 
 #define _MPU9250_port Wire
 #define _BNO055_port  Wire
@@ -48,7 +48,6 @@ void setup() {
   wdt.begin(config);
 
 #if defined( _use_MB85)
-  byte arraySize = sizeof(MYDATA_t);
   
   Serial.println("Starting MB85...");
     
@@ -58,6 +57,7 @@ void setup() {
 
 #if defined( _write_init_MB85)
 //---------init data - load array
+  byte arraySize = sizeof(MYDATA_t);
   mydata.datastruct.data_0 = true;
   Serial.print("Data_0: ");
   if (mydata.datastruct.data_0) Serial.println("true");

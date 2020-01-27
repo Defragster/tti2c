@@ -4,27 +4,27 @@
 
 #include <FRAM_MB85RC_I2C.h>
 //define a struct of various data types
-typedef struct MYDATA_t {
+typedef struct {
   bool data_0;
-  float data_1; 
-  long data_2; 
+  float data_1;
+  long data_2;
   int data_3;
   byte data_4;
   char data_5[32];
-};
+} MYDATA_t;
 
 //define a struct joining MYDATA_t to an array of bytes to be stored
-typedef union MYDATA4I2C_t {
- MYDATA_t datastruct;
- uint8_t I2CPacket[sizeof(MYDATA_t)];
-};
+typedef union {
+  MYDATA_t datastruct;
+  uint8_t I2CPacket[sizeof(MYDATA_t)];
+} MYDATA4I2C_t;
 
 MYDATA4I2C_t mydata; //data to be written in memory
 MYDATA4I2C_t readdata; //data read from memory
 
 //random address to write from
 uint16_t writeaddress2 = (256 * 128) - 80; // calculated regarding density to hit more or less the end of memory map
-byte resultw, resultr; 
+byte resultw, resultr;
 
 //Creating object for FRAM chip
 FRAM_MB85RC_I2C mymemory(_MB85_port);
@@ -43,10 +43,10 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, DisplayWire, OLED_RESET);
 #endif
 
 #if defined( _use_9250)
-  #include "MPU9250.h"
-  // an MPU9250 object with the MPU-9250 sensor on I2C bus 0 with address 0x68
-  MPU9250 IMU(_MPU9250_port, 0x68);
-  int status;
+#include "MPU9250.h"
+// an MPU9250 object with the MPU-9250 sensor on I2C bus 0 with address 0x68
+MPU9250 IMU(_MPU9250_port, 0x68);
+int status;
 #endif
 
 #if defined( _use_BNO055)
