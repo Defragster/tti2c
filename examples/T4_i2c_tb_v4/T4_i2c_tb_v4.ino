@@ -31,15 +31,41 @@ void myCallback() {
 
 #include "configDevices.h"
 
+void ToggleClock0() {
+  pinMode( 18, INPUT );
+  pinMode( 19, OUTPUT );
+  for ( int ii = 0; ii < 32; ii++ ) {
+    digitalWriteFast(19, ii % 2 );
+    digitalReadFast(18);
+    delayMicroseconds(3);
+  }
+}
+
+void printSSD( int xx, int yy, const char * szOut, int tSize ) {
+#if defined ( _use_ssd1306 )
+  if ( xx == 0 && yy == 0 ) display.clearDisplay();
+  display.setTextSize(tSize);
+  display.setTextColor(SSD1306_WHITE);        // Draw white text
+  if ( xx >= 0 && yy >= 0 ) display.setCursor(xx, yy);
+  display.print(szOut);
+  display.display();
+#endif
+}
+
 /*
- * =========================================
- * Setup Devices now
- * ========================================
- */
+   =========================================
+   Setup Devices now
+   ========================================
+*/
 void setup() {
   // serial to display data
   Serial.begin(115200);
-  while(!Serial) {}
+  while (!Serial) {}
+
+  if ( 1 ) {
+    Serial.println("ToggleClock0 in Setup()...");
+    ToggleClock0();
+  }
 
   WDT_timings_t config;
   config.trigger = 10; /* in seconds, 0->128 */
@@ -48,15 +74,15 @@ void setup() {
   wdt.begin(config);
 
 #if defined( _use_MB85)
-  
+
   Serial.println("Starting MB85...");
-    
+
   mymemory.begin();
   //_MB85_port.setClock(1000000);
   //mymemory.eraseDevice();
 
 #if defined( _write_init_MB85)
-//---------init data - load array
+  //---------init data - load array
   byte arraySize = sizeof(MYDATA_t);
   mydata.datastruct.data_0 = true;
   Serial.print("Data_0: ");
@@ -70,28 +96,28 @@ void setup() {
   Serial.println(mydata.datastruct.data_2, DEC);
   mydata.datastruct.data_3 = 142;
   Serial.print("Data_3: ");
-  Serial.println(mydata.datastruct.data_3, DEC);  
+  Serial.println(mydata.datastruct.data_3, DEC);
   mydata.datastruct.data_4 = 0x50;
   Serial.print("Data_4: 0x");
   Serial.println(mydata.datastruct.data_4, HEX);
 
   //string test
   String string_test = "The Quick Brown Fox Jumped";
-  char cbuff[string_test.length()+1];
-  string_test.toCharArray(cbuff, string_test.length()+1);
-  for(uint8_t j=0; j <string_test.length()+1; j++){
-       mydata.datastruct.data_5[j] = cbuff[j];
+  char cbuff[string_test.length() + 1];
+  string_test.toCharArray(cbuff, string_test.length() + 1);
+  for (uint8_t j = 0; j < string_test.length() + 1; j++) {
+    mydata.datastruct.data_5[j] = cbuff[j];
   }
   Serial.println(string_test);
-  
+
   Serial.println("...... ...... ......");
   Serial.println("Init Done - array loaded");
   Serial.println("...... ...... ......");
 
-//----------write to FRAM chip
+  //----------write to FRAM chip
   byte result = mymemory.writeArray(writeaddress, arraySize, mydata.I2CPacket);
-    if (result == 0) Serial.println("Write Done - array loaded in FRAM chip");
-    if (result != 0) Serial.println("Write failed");
+  if (result == 0) Serial.println("Write Done - array loaded in FRAM chip");
+  if (result != 0) Serial.println("Write failed");
   Serial.println("...... ...... ......");
 
 #endif //write_init_data
@@ -104,27 +130,22 @@ void setup() {
     Serial.println(F("SSD1306 allocation failed"));
   }
   delay(500);
-#if defined ( _use_ssd1306 )
-  display.clearDisplay();
-  display.setTextSize(2);             // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE);        // Draw white text
-  display.setCursor(0, 0);            // Start at top-left corner
-  display.println(F("Hello"));
-  display.display();
-#endif
+  printSSD( 0, 0, ("Hello\n"), 2 );
+
 #endif
 
 #if defined(_use_9250)
-  // start communication with IMU 
+  // start communication with IMU
+  printSSD( 0, 0, ("9250 Init"), 1 );
   status = IMU.begin();
   if (status < 0) {
     Serial.println("IMU 9250 initialization unsuccessful");
     Serial.println("Check IMU wiring or try cycling power");
     Serial.print("Status: ");
     Serial.println(status);
-    while(1) {}
+    while (1) {}
   }
-  // setting the accelerometer full scale range to +/-8G 
+  // setting the accelerometer full scale range to +/-8G
   IMU.setAccelRange(MPU9250::ACCEL_RANGE_8G);
   // setting the gyroscope full scale range to +/-500 deg/s
   IMU.setGyroRange(MPU9250::GYRO_RANGE_500DPS);
@@ -132,23 +153,18 @@ void setup() {
   IMU.setDlpfBandwidth(MPU9250::DLPF_BANDWIDTH_20HZ);
   // setting SRD to 19 for a 50 Hz update rate
   IMU.setSrd(19);
-#if defined ( _use_ssd1306)
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setCursor(0, 0);
-  display.println(F("9250 Initialized"));
-  display.display();
-#endif
+  printSSD( -1, -1, ("ialized\n"), 1 );
 #endif
 
 #if defined(_use_BNO055)
-  /* Initialise the sensor */  
-    //max
-  if(!bno.begin())
+  /* Initialise the sensor */
+  //max
+  printSSD( -1, -1, ("055 Init"), 1 );
+  if (!bno.begin())
   {
     /* There was a problem detecting the BNO055 ... check your connections */
     Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
-    while(1);
+    while (1);
   }
 
   delay(1000);
@@ -163,21 +179,32 @@ void setup() {
   bno.setExtCrystalUse(true);
 
   Serial.println("Calibration status values: 0=uncalibrated, 3=fully calibrated");
-#if defined ( _use_ssd1306 )
-  //display.clearDisplay();
-  display.setTextSize(1);
-  display.println(F("055 Initialized"));
-  //display.setCursor(0, 0);
-  display.display();
-#endif
+  printSSD( -1, -1, ("ialized\n"), 1 );
 #endif
 
 #if defined(_use_BNO080)
+  printSSD( -1, -1, ("055 Init"), 1 );
   delay(200);
   _BNO080_port.begin();
   if (myIMU.begin(0x4B, _BNO080_port) == false)
   {
-    Serial.println("BNO080 not detected at default I2C address. Check your jumpers and the hookup guide. Freezing...");
+    Serial.println("BNO080 not detected at default I2C address. Check your jumpers and the hookup guide. TOGGLE...");
+    printSSD( -1, -1, ("... TOGGLE\n"), 1 );
+    ToggleClock0();
+    if (!bno.begin())
+    {
+      /* There was a problem detecting the BNO055 ... check your connections */
+      Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
+      while (1);
+    }
+    printSSD( -1, -1, ("055 Init"), 1 );
+    _BNO080_port.begin();
+    if (myIMU.begin(0x4B, _BNO080_port) == false)
+    {
+      Serial.println("BNO080 not detected at default I2C address. Check your jumpers and the hookup guide. Freezing...");
+      printSSD( -1, -1, ("... FAIL"), 1 );
+    }
+
     while (1);
   }
 
@@ -188,12 +215,8 @@ void setup() {
   Serial.println(F("Rotation vector enabled"));
   Serial.println(F("Output in form i, j, k, real, accuracy"));
 
-#if defined ( _use_ssd1306 )
-  display.setTextSize(1);
-  //display.setCursor(0, 0);
-  display.println(F("080 Initialized"));
-  display.display();
-#endif
+  printSSD( -1, -1, ("ialized\n"), 1 );
+  delay(400);
 #endif
 
 #if defined( _use_lidar)
@@ -217,13 +240,13 @@ void loop()
   if ( millis() - feed > 21000 ) {
     feed = millis();
     wdt.feed(); /* feed the dog every 11 seconds, to exceed 10second timeout period to refresh callback and gpio state for repeat */
-      idisp055 = 1;
-      idisp9250 = 0;
-      idisp080 = 0;
-  } else if(millis() - feed > 16000){
-      idisp055 = 0;
-      idisp9250 = 0;
-      idisp080 = 1;
+    idisp055 = 1;
+    idisp9250 = 0;
+    idisp080 = 0;
+  } else if (millis() - feed > 16000) {
+    idisp055 = 0;
+    idisp9250 = 0;
+    idisp080 = 1;
   }
 
 
