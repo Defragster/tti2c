@@ -183,7 +183,7 @@ void setup() {
 #endif
 
 #if defined(_use_BNO080)
-  printSSD( -1, -1, ("055 Init"), 1 );
+  printSSD( -1, -1, ("080 Init"), 1 );
   delay(200);
   _BNO080_port.begin();
   if (myIMU.begin(0x4B, _BNO080_port) == false)
@@ -194,10 +194,10 @@ void setup() {
     if (!bno.begin())
     {
       /* There was a problem detecting the BNO055 ... check your connections */
-      Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
+      Serial.print("Ooops, no BNO080 detected ... Check your wiring or I2C ADDR!");
       while (1);
     }
-    printSSD( -1, -1, ("055 Init"), 1 );
+    printSSD( -1, -1, ("080 Init"), 1 );
     _BNO080_port.begin();
     if (myIMU.begin(0x4B, _BNO080_port) == false)
     {
