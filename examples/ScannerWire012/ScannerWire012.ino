@@ -184,7 +184,7 @@ void printKnownChips(byte address)
     case 0x48: Serial.print(F("ADS1115,PN532,TMP102,LM75,PCF8591")); break;
     case 0x49: Serial.print(F("ADS1115,TSL2561,PCF8591")); break;
     case 0x4A: Serial.print(F("ADS1115")); break;
-    case 0x4B: Serial.print(F("ADS1115,TMP102,BNO080")); break;
+    case 0x4B: Serial.print(F("ADS1115,TMP102,BNO080,Qwiic_KPAD")); break;
     case 0x50: Serial.print(F("EEPROM,FRAM")); break;
     case 0x51: Serial.print(F("EEPROM")); break;
     case 0x52: Serial.print(F("Nunchuk,EEPROM")); break;
@@ -205,6 +205,7 @@ void printKnownChips(byte address)
     case 0x69: Serial.print(F("MPU6050,MPU9050,MPU9250,ITG3701,L3G4200D")); break;
     case 0x6A: Serial.print(F("LSM9DS1")); break;
     case 0x6B: Serial.print(F("LSM9DS0")); break;
+    case 0x6F: Serial.print(F("Qwiic_BTN")); break;
     case 0x70: Serial.print(F("HT16K33")); break;
     case 0x71: Serial.print(F("SFE7SEG,HT16K33")); break;
     case 0x72: Serial.print(F("HT16K33")); break;
