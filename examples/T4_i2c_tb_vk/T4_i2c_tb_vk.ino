@@ -28,14 +28,39 @@ TwoWire *DisplayWire = &Wire1;
 #define _QBTN2_port   Wire1
 #define _SHT31_port   Wire
 
-int idisp9250 = 0;
-int idisp055 = 1;
-int idisp080 = 0;
+//int idisp9250 = 0;
+//int idisp055 = 1;
+//int idisp080 = 0;
+typedef enum _disp_data_indexes {
+#if defined(_use_9250)
+  DISPLAY_9250,
+#endif
+#if defined(_use_BNO055)
+  DISPLAY_BNO055,
+#endif
+#if defined(_use_BNO080)
+  DISPLAY_BNO080,
+#endif
+#if defined(_use_lidar)
+  DISPLAY_lidar,
+#endif
+#if defined(_use_MB85)
+  DISPLAY_MB85,
+#endif
+#if defined(_use_SHT31)
+  DISPLAY_SHT31,
+#endif  
+  DISPLAY_FIELD_COUNT
+} DISP_DATA_INDEX_t;
+
+int disp_data_index = (DISP_DATA_INDEX_t)0;
+elapsedMillis disp_data_elapsed = 0;
+#define FIELD_DISPLAY_TIME 2500
+bool hold_display_field = false;
+
 void myCallback() {
   Serial.println("FEED THE DOG SOON, OR RESET!");
-  idisp9250 = 1;
-  idisp055 = 0;
-  idisp080 = 0;
+  disp_data_index = (DISP_DATA_INDEX_t)0;
 }
 
 #include "configDevices.h"
@@ -300,20 +325,22 @@ void setup() {
 
 void loop()
 {
-#if 0
   static uint32_t feed = millis();
   if ( millis() - feed > 21000 ) {
     feed = millis();
     wdt.feed(); /* feed the dog every 11 seconds, to exceed 10second timeout period to refresh callback and gpio state for repeat */
-    idisp055 = 1;
-    idisp9250 = 0;
-    idisp080 = 0;
-  } else if (millis() - feed > 16000) {
-    idisp055 = 0;
-    idisp9250 = 0;
-    idisp080 = 1;
+    //idisp055 = 1;
+    //idisp9250 = 0;
+    //idisp080 = 0;
   }
 
+  // QBTN1 on says hold which field is displayed
+  if (!hold_display_field && (disp_data_elapsed >= FIELD_DISPLAY_TIME)) {
+    disp_data_elapsed = 0;
+    disp_data_index++;
+    if (disp_data_index >= DISPLAY_FIELD_COUNT) 
+      disp_data_index = 0;
+  }
 
 #if defined( _use_9250)
   loop9250();
@@ -340,7 +367,6 @@ void loop()
   Serial.println();
 #endif
 
-#endif
 #if defined(_use_QKEYPAD) //  0x4b
   loopQPad();
 #endif

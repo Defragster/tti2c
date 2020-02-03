@@ -27,7 +27,7 @@ void loop9250() {
   //Serial.print(", ");
   //Serial.println(IMU.getTemperature_C(),6);
 #if defined ( _use_ssd1306 )
-  if (idisp9250 == 1) {
+  if (disp_data_index == DISPLAY_9250) {
     display.clearDisplay();
     display.setTextSize(2);
     display.setCursor(0, 0);
@@ -67,7 +67,7 @@ void loop055(void)
   Serial.print("\n");
 
 #if defined ( _use_ssd1306)
-  if (idisp055 == 1) {
+  if (disp_data_index == DISPLAY_BNO055) {
     display.clearDisplay();
     display.setTextSize(2);
     display.setCursor(0, 0);
@@ -137,7 +137,7 @@ void loop080()
     Serial.println();
 
 #if defined ( _use_ssd1306)
-    if (idisp080 == 1) {
+    if (disp_data_index == DISPLAY_BNO080) {
       display.clearDisplay();
       display.setTextSize(2);
       display.setCursor(0, 0);
@@ -182,7 +182,7 @@ void looplidar()
   {
     int lld = myLidarLite.distance(false);
 #if defined ( _use_ssd1306 )
-    if (lld < 10) {
+    if (disp_data_index == DISPLAY_lidar) {
       display.clearDisplay();
       display.setTextSize(2);
       display.setCursor(0, 0);
@@ -267,8 +267,10 @@ void loopQBtn1()
     // see if I can toggle
     if (qbtn1.readSingleRegister(LED_BRIGHTNESS)) {
       qbtn1.LEDoff();
+      hold_display_field = false;
     } else {
       qbtn1.LEDon(100);
+      hold_display_field = true;
     }
   }
 }
@@ -304,7 +306,13 @@ void loopQPad()
   {
     if (button == '#') Serial.println();
     else if (button == '*') Serial.print(" ");
-    else Serial.print(button);
+    else {
+      Serial.print(button);
+      disp_data_elapsed = 0;
+      disp_data_index = (button - '0');
+      if (disp_data_index >= DISPLAY_FIELD_COUNT)
+        disp_data_index = 0;
+    }
   }
 }
 #endif
@@ -325,6 +333,21 @@ void loopSHT31()
   } else {
     Serial.println("Failed to read humidity");
   }
+#if defined ( _use_ssd1306)
+  if (disp_data_index == DISPLAY_SHT31) {
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setCursor(0, 0);
+    display.println("SHT31: ");
+    display.print(t, 2);
+    display.print("C, ");
+    display.print(t * 1.8 + 32.0, 2);
+    display.print("F,");
+    display.print(h, 2);
+    display.print("H%");
+    display.display();
+  }
+#endif
 
 }
 #endif
