@@ -31,7 +31,8 @@ void loop9250() {
     display.clearDisplay();
     display.setTextSize(2);
     display.setCursor(0, 0);
-    display.println("9250: ");
+    display.print(disp_data_index, DEC);
+    display.println("<9250> ");
     display.print(IMU.getAccelX_mss(), 2);
     display.print(",");
     display.print(IMU.getAccelY_mss(), 2);
@@ -71,7 +72,8 @@ void loop055(void)
     display.clearDisplay();
     display.setTextSize(2);
     display.setCursor(0, 0);
-    display.println("BNO055: ");
+    display.print(disp_data_index, DEC);
+    display.println("<BNO055> ");
     display.print(euler.x());
     display.print(",");
     display.print(euler.y());
@@ -141,7 +143,8 @@ void loop080()
       display.clearDisplay();
       display.setTextSize(2);
       display.setCursor(0, 0);
-      display.println("BNO0080: ");
+      display.print(disp_data_index, DEC);
+      display.println("<BNO0080> ");
       display.print(quatI, 2);
       display.print(",");
       display.print(quatJ, 2);
@@ -186,7 +189,8 @@ void looplidar()
       display.clearDisplay();
       display.setTextSize(2);
       display.setCursor(0, 0);
-      display.println("LLv3: ");
+      display.print(disp_data_index, DEC);
+      display.println("<LLv3> ");
       display.print(lld);
       display.print(" cm Too Close");
       display.display();
@@ -278,15 +282,20 @@ void loopQBtn1()
 #if defined(_use_QBTN2)
 void loopQBtn12()
 {
-  if (qbtn2.hasBeenClicked()) {
+  if (qbtn2.isPressed()) {
+    qbtn2.LEDon(100);
+  }
+  else if (qbtn2.hasBeenClicked()) {
     Serial.println("QBtn2 Has been clicked");
     qbtn2.clearEventBits();
+    qbtn2.LEDoff();
     // see if I can toggle
-    if (qbtn2.readSingleRegister(LED_BRIGHTNESS)) {
-      qbtn2.LEDoff();
-    } else {
-      qbtn2.LEDon(100);
-    }
+    // Now lets go to next display in list...
+    disp_data_elapsed = 0;
+    disp_data_index++;
+
+    if (disp_data_index >= DISPLAY_FIELD_COUNT)
+      disp_data_index = 0;
   }
 }
 #endif
@@ -338,7 +347,8 @@ void loopSHT31()
     display.clearDisplay();
     display.setTextSize(2);
     display.setCursor(0, 0);
-    display.println("SHT31: ");
+    display.print(disp_data_index, DEC);
+    display.println("<SHT31> ");
     display.print(t, 2);
     display.print("C, ");
     display.print(t * 1.8 + 32.0, 2);

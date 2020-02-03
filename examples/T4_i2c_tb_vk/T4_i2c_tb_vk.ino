@@ -45,7 +45,7 @@ typedef enum _disp_data_indexes {
   DISPLAY_lidar,
 #endif
 #if defined(_use_MB85)
-  DISPLAY_MB85,
+  //DISPLAY_MB85,
 #endif
 #if defined(_use_SHT31)
   DISPLAY_SHT31,
