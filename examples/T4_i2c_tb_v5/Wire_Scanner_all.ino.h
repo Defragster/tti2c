@@ -28,7 +28,7 @@
 // Devices with higher bit address might not be seen properly.
 //
 
-// #define FRANKESTEIN
+#define FRANKESTEIN
 #include <Wire.h>
 void printKnownChips(byte address);
 
