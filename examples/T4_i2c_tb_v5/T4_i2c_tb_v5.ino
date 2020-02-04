@@ -214,6 +214,8 @@ void setup() {
       {
         Serial.println("\tBNO080 not detected at default I2C address. Check your jumpers and the hookup guide. Freezing...");
         printSSD( -1, -1, ("... FAIL"), 1 );
+        Scanloop();
+        Serial.print("\nFAIL - STOP << ============================================================= \n");
         while (1);
       }
       else {
