@@ -1,6 +1,8 @@
 #include <Wire.h>
+#if defined(__IMXRT1062__)
 #include "Watchdog_t4.h"
 WDT_T4<WDT2> wdt;
+#endif
 #include "Wire_Scanner_all.ino.h"
 
 #define _use_9250
@@ -91,11 +93,13 @@ void setup() {
   while (!Serial) {}
   Scansetup(); // setup() :: Wire_Scanner_all.ino.h
   Scanloop(); // one loop() :: Wire_Scanner_all.ino.h
+#if defined(__IMXRT1062__)
   WDT_timings_t config;
   config.trigger = 10; /* in seconds, 0->128 */
   config.timeout = 20; /* in seconds, 0->128 */
   config.callback = myCallback;
   wdt.begin(config);
+#endif
 
   ToggleClock0( 1 );
 #if defined( _use_MB85)
@@ -271,7 +275,7 @@ void setup() {
   if (qbtn1.begin( _use_QBTN1, _QBTN1_port) == false) {  // Note, using begin() like this will use default I2C address, 0x4B.
     printSSD( -1, -1, ("... FAIL"), 1 );
   } else {
-    printSSD( 0, 0, ("ialized C+\n"), 2 );
+    printSSD( -1, -1, ("ialized C+\n"), 1 );
     qbtn1.clearEventBits();
     qbtn1.LEDoff();
   }
@@ -304,7 +308,9 @@ void loop()
   static uint32_t feed = millis();
   if ( millis() - feed > 21000 ) {
     feed = millis();
+#if defined(__IMXRT1062__)
     wdt.feed(); /* feed the dog every 11 seconds, to exceed 10second timeout period to refresh callback and gpio state for repeat */
+#endif
     idisp055 = 1;
     idisp9250 = 0;
     idisp080 = 0;

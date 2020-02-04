@@ -1,6 +1,8 @@
 #include <Wire.h>
+#if defined(__IMXRT1062__)
 #include "Watchdog_t4.h"
 WDT_T4<WDT2> wdt;
+#endif
 #include "Wire_Scanner_all.ino.h"
 
 #define _use_9250
@@ -33,20 +35,25 @@ void myCallback() {
 #include "configDevices.h"
 
 void ToggleClock0( int iCmd ) {
-  if ( !iCmd ) return;
+  if ( !iCmd ) return; // Pass in ZERO to have exit with no action
   if ( 2 <= iCmd ) {
     Wire.end();
   }
   Serial.print("TC #");
-  Serial.println(iCmd);
+  Serial.print(iCmd);
 
+  if ( 2 <= iCmd ) Wire.end();
   pinMode( 18, INPUT );
   pinMode( 19, OUTPUT );
-  for ( int ii = 0; ii < 32; ii++ ) {
+#define ICNT 32
+  Serial.print("\tTC SDA read: ");
+  for ( int ii = 0; ii < ICNT; ii++ ) {
     digitalWriteFast(19, ii % 2 );
-    digitalReadFast(18);
+    Serial.print( digitalReadFast(18) );
+    Serial.print( " " );
     delayMicroseconds(3);
   }
+  Serial.print("\n");
   if ( 2 <= iCmd ) {
     Wire.begin();
     Scanloop(); // one loop() :: Wire_Scanner_all.ino.h
@@ -81,13 +88,16 @@ void setup() {
   // serial to display data
   Serial.begin(115200);
   while (!Serial) {}
+  Serial.println("\n" __FILE__ " " __DATE__ " " __TIME__);
   Scansetup(); // setup() :: Wire_Scanner_all.ino.h
   Scanloop(); // one loop() :: Wire_Scanner_all.ino.h
+#if defined(__IMXRT1062__)
   WDT_timings_t config;
   config.trigger = 10; /* in seconds, 0->128 */
   config.timeout = 20; /* in seconds, 0->128 */
   config.callback = myCallback;
   wdt.begin(config);
+#endif
 
   ToggleClock0( 1 );
 #if defined( _use_MB85)
@@ -245,7 +255,7 @@ void setup() {
   Wire.setClock(400000UL);  //max
 
   myLidarLite.configure(0); // Change this number to try out alternate configurations
-  printSSD( 0, 0, ("ialized C+\n"), 2 );
+  printSSD( -1, -1, ("ialized C+\n"), 1 );
   delay(1000);
 #endif
 }
@@ -255,7 +265,9 @@ void loop()
   static uint32_t feed = millis();
   if ( millis() - feed > 21000 ) {
     feed = millis();
+#if defined(__IMXRT1062__)
     wdt.feed(); /* feed the dog every 11 seconds, to exceed 10second timeout period to refresh callback and gpio state for repeat */
+#endif
     idisp055 = 1;
     idisp9250 = 0;
     idisp080 = 0;
