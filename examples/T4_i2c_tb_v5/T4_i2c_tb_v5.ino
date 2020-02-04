@@ -35,14 +35,9 @@ void myCallback() {
 #include "configDevices.h"
 
 void ToggleClock0( int iCmd ) {
-  if ( !iCmd ) return; // Pass in ZERO to have exit with no action
-  if ( 2 <= iCmd ) {
-    Wire.end();
-  }
   Serial.print("TC #");
   Serial.print(iCmd);
-
-  if ( 2 <= iCmd ) Wire.end();
+  if ( !iCmd ) return; // Pass in ZERO to have exit with no action
   pinMode( 18, INPUT );
   pinMode( 19, OUTPUT );
 #define ICNT 32
@@ -54,14 +49,6 @@ void ToggleClock0( int iCmd ) {
     delayMicroseconds(3);
   }
   Serial.print("\n");
-  if ( 2 <= iCmd ) {
-    Wire.begin();
-    Scanloop(); // one loop() :: Wire_Scanner_all.ino.h
-    Wire.end();
-    delay(300);  // BUGBUG .end, delay(300), .begin puts 0x4B back in list after error - it was skipped! But still not found on 'init'
-    Wire.begin();
-    Scanloop(); // one loop() :: Wire_Scanner_all.ino.h
-  }
 }
 
 void printSSD( int xx, int yy, const char * szOut, int tSize ) {
@@ -214,7 +201,7 @@ void setup() {
     Serial.println("\tBNO080 not detected at default I2C address. Check your jumpers and the hookup guide. TOGGLE...");
     if ( 1 ) {
       printSSD( -1, -1, ("... TOGGLE\n"), 1 );
-      ToggleClock0( 2 );
+      ToggleClock0( 1 );
       if (!bno.begin())
       {
         /* There was a problem detecting the BNO055 ... check your connections */
@@ -231,6 +218,8 @@ void setup() {
       }
       else {
         printSSD( -1, -1, ("\nRecovered\n"), 1 );
+        Serial.print("\nRecovered << ============================================================= \n");
+        Serial.print("\nRecovered << ============================================================= \n");
         delay(5000);
       }
     }
