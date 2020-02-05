@@ -68,6 +68,7 @@ void myCallback() {
 #include "configDevices.h"
 
 void ToggleClock0( int iCmd ) {
+  return; // Lets not do anything
   if ( !iCmd ) return;
   if ( 2 <= iCmd ) {
     Wire.end();
@@ -242,7 +243,7 @@ void setup() {
     if ( 1 ) {
       printSSD( -1, -1, ("... TOGGLE\n"), 1 );
       ToggleClock0( 2 );
-      if (!bno.begin())
+      if (!myIMU.begin())
       {
         /* There was a problem detecting the BNO055 ... check your connections */
         Serial.print("\tOoops, no BNO080 detected ... Check your wiring or I2C ADDR!");
@@ -335,9 +336,9 @@ void loop()
 #if defined(__IMXRT1062__)
     wdt.feed(); /* feed the dog every 11 seconds, to exceed 10second timeout period to refresh callback and gpio state for repeat */
 #endif
-    idisp055 = 1;
-    idisp9250 = 0;
-    idisp080 = 0;
+//    idisp055 = 1;
+//    idisp9250 = 0;
+//    idisp080 = 0;
   } else if (millis() - feed > 16000) {
     //idisp055 = 1;
     //idisp9250 = 0;
