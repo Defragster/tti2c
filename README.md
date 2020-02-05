@@ -14,6 +14,7 @@ Teensy tested i2c devices
 1.	SHT31: https://github.com/adafruit/Adafruit_SHT31
 2.	SFun Qwiic Button : https://github.com/sparkfun/SparkFun_Qwiic_Button_Arduino_Library
 3.	SFun Qwiic Keypad : https://github.com/sparkfun/SparkFun_Qwiic_Keypad_Arduino_Library
+4.  Slave Rx https://github.com/madsci1016/Arduino-EasyTransfer for : https://github.com/madsci1016/Arduino-EasyTransfer/tree/master/EasyTransferI2C/examples/EasyTransfer_RX_Example
 
 
 ## Alternate Libraries
