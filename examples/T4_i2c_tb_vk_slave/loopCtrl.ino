@@ -188,7 +188,8 @@ void looplidar()
       display.setCursor(0, 0);
       display.println("LLv3: ");
       display.print(lld);
-      display.print(" cm Too Close");
+      if (lld < 10)
+        display.print(" cm Too Close");
       display.display();
       if ( 0 == i )   Scanloop(); // one loop() :: Wire_Scanner_all.ino.h
     }
@@ -361,15 +362,15 @@ void loopT32()
   slavedata.pause = random(5);
   //send the data
   ET.sendData(I2C_SLAVE_ADDRESS);
-  
+
   //Just for fun, we will blink it out too
-   for(int i = slavedata.blinks; i>0; i--){
-      digitalWrite(13, HIGH);
-      delay(slavedata.pause * 100);
-      digitalWrite(13, LOW);
-      delay(slavedata.pause * 100);
-    }
-  
-  Serial.printf("Sending Data to T3.2 ====> \n",slavedata.blinks);
+  for (int i = slavedata.blinks; i > 0; i--) {
+    digitalWrite(13, HIGH);
+    delay(slavedata.pause * 100);
+    digitalWrite(13, LOW);
+    delay(slavedata.pause * 100);
+  }
+
+  Serial.printf("Sending Data to T3.2 ====> \n", slavedata.blinks);
 }
 #endif

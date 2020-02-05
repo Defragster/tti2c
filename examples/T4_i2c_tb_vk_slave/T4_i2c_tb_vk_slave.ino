@@ -1,6 +1,8 @@
 #include <Wire.h>
+#if defined(__IMXRT1062__)
 #include "Watchdog_t4.h"
 WDT_T4<WDT2> wdt;
+#endif
 #include <EasyTransferI2C.h>
 #include "Wire_Scanner_all.ino.h"
 
@@ -72,7 +74,7 @@ void myCallback() {
 void ToggleClock0( int iCmd ) {
   if ( !iCmd ) return;
   if ( 2 <= iCmd ) {
-    Wire.end();
+    // TBD
   }
   Serial.print("TC #");
   Serial.println(iCmd);
@@ -81,16 +83,11 @@ void ToggleClock0( int iCmd ) {
   pinMode( 19, OUTPUT );
   for ( int ii = 0; ii < 32; ii++ ) {
     digitalWriteFast(19, ii % 2 );
-    digitalReadFast(18);
+    // digitalReadFast(18); // could check for 0 from slave ?
     delayMicroseconds(3);
   }
   if ( 2 <= iCmd ) {
-    Wire.begin();
-    Scanloop(); // one loop() :: Wire_Scanner_all.ino.h
-    Wire.end();
-    delay(300);  // BUGBUG .end, delay(300), .begin puts 0x4B back in list after error - it was skipped! But still not found on 'init'
-    Wire.begin();
-    Scanloop(); // one loop() :: Wire_Scanner_all.ino.h
+    // TBD
   }
 }
 
@@ -237,7 +234,7 @@ void setup() {
     Serial.println("\tBNO080 not detected at default I2C address. Check your jumpers and the hookup guide. TOGGLE...");
     if ( 1 ) {
       printSSD( -1, -1, ("... TOGGLE\n"), 1 );
-      ToggleClock0( 2 );
+      ToggleClock0( 1 );
       if (!myIMU.begin())
       {
         /* There was a problem detecting the BNO055 ... check your connections */
@@ -278,8 +275,7 @@ void setup() {
   //Wire.setClock(400000UL);  //max
 
   myLidarLite.configure(0); // Change this number to try out alternate configurations
-  printSSD( 0, 0, ("ialized C+\n"), 2 );
-  delay(1000);
+  printSSD( -1, -1, ("ialized C+\n"), 1 );
 #endif
 
 #if defined(_use_QKEYPAD) //  0x4b
@@ -287,7 +283,7 @@ void setup() {
   if (qkeypad.begin(_QKEY_port, _use_QKEYPAD) == false) {  // Note, using begin() like this will use default I2C address, 0x4B.
     printSSD( -1, -1, ("... FAIL"), 1 );
   } else {
-    printSSD( 0, 0, ("ialized C+\n"), 2 );
+    printSSD( -1, -1, ("ialized C+\n"), 1 );
     Serial.println(qkeypad.getVersion());
   }
 #endif
@@ -296,7 +292,7 @@ void setup() {
   if (qbtn1.begin( _use_QBTN1, _QBTN1_port) == false) {  // Note, using begin() like this will use default I2C address, 0x4B.
     printSSD( -1, -1, ("... FAIL"), 1 );
   } else {
-    printSSD( 0, 0, ("ialized C+\n"), 2 );
+    printSSD( -1, -1, ("ialized C+\n"), 1 );
     qbtn1.clearEventBits();
     qbtn1.LEDoff();
   }
@@ -306,7 +302,7 @@ void setup() {
   if (qbtn2.begin(_use_QBTN2, _QBTN2_port) == false) {  // Note, using begin() like this will use default I2C address, 0x4B.
     printSSD( -1, -1, ("... FAIL"), 1 );
   } else {
-    printSSD( 0, 0, ("ialized C+\n"), 2 );
+    printSSD( -1, -1, ("ialized C+\n"), 1 );
     qbtn2.clearEventBits();
     qbtn2.LEDoff();
   }
@@ -317,7 +313,7 @@ void setup() {
   if (sht31.begin(_use_SHT31) == false) {  // Note, using begin() like this will use default I2C address, 0x4B.
     printSSD( -1, -1, ("... FAIL"), 1 );
   } else {
-    printSSD( 0, 0, ("ialized C+\n"), 2 );
+    printSSD( -1, -1, ("ialized C+\n"), 1 );
   }
 #endif
 
@@ -327,11 +323,14 @@ void setup() {
   randomSeed(analogRead(0));
 #endif
 
+#if defined(__IMXRT1062__)
   WDT_timings_t config;
   config.trigger = 10; /* in seconds, 0->128 */
   config.timeout = 20; /* in seconds, 0->128 */
   config.callback = myCallback;
   wdt.begin(config);
+#endif
+  delay(1000);
 }
 
 void loop()
@@ -339,7 +338,9 @@ void loop()
   static uint32_t feed = millis();
   if ( millis() - feed > 21000 ) {
     feed = millis();
+#if defined(__IMXRT1062__)
     wdt.feed(); /* feed the dog every 11 seconds, to exceed 10second timeout period to refresh callback and gpio state for repeat */
+#endif
     //idisp055 = 1;
     //idisp9250 = 0;
     //idisp080 = 0;
@@ -349,7 +350,7 @@ void loop()
   if (!hold_display_field && (disp_data_elapsed >= FIELD_DISPLAY_TIME)) {
     disp_data_elapsed = 0;
     disp_data_index++;
-    if (disp_data_index >= DISPLAY_FIELD_COUNT) 
+    if (disp_data_index >= DISPLAY_FIELD_COUNT)
       disp_data_index = 0;
   }
 
