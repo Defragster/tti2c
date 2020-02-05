@@ -14,7 +14,7 @@ uint16_t writeaddress = 0x025;
 #define _use_QKEYPAD  0x4b
 #define _use_QBTN1  0x6f
 //#define _use_QBTN2  0x6f
-//#define _use_SHT31  0x44
+#define _use_SHT31  0x44
 #define _use_T32
 
 #define _use_ssd1306
@@ -120,11 +120,6 @@ void setup() {
   while (!Serial) {}
   Scansetup(); // setup() :: Wire_Scanner_all.ino.h
   Scanloop(); // one loop() :: Wire_Scanner_all.ino.h
-  WDT_timings_t config;
-  config.trigger = 10; /* in seconds, 0->128 */
-  config.timeout = 20; /* in seconds, 0->128 */
-  config.callback = myCallback;
-  wdt.begin(config);
 
   ToggleClock0( 1 );
 #if defined( _use_MB85)
@@ -236,13 +231,14 @@ void setup() {
   printSSD( -1, -1, ("080 Init"), 1 );
   delay(200);
   _BNO080_port.begin();
+  myIMU.enableDebugging();
   if (myIMU.begin(0x4B, _BNO080_port) == false)
   {
     Serial.println("\tBNO080 not detected at default I2C address. Check your jumpers and the hookup guide. TOGGLE...");
     if ( 1 ) {
       printSSD( -1, -1, ("... TOGGLE\n"), 1 );
       ToggleClock0( 2 );
-      if (!bno.begin())
+      if (!myIMU.begin())
       {
         /* There was a problem detecting the BNO055 ... check your connections */
         Serial.print("\tOoops, no BNO080 detected ... Check your wiring or I2C ADDR!");
@@ -279,7 +275,7 @@ void setup() {
   printSSD( -1, -1, ("LL3 Init"), 1 );
   //myLidarLite.begin(0, true); // Set configuration to default and I2C to 400 kHz
   _LIDAR_port.begin();
-  Wire.setClock(400000UL);  //max
+  //Wire.setClock(400000UL);  //max
 
   myLidarLite.configure(0); // Change this number to try out alternate configurations
   printSSD( 0, 0, ("ialized C+\n"), 2 );
@@ -330,6 +326,12 @@ void setup() {
   pinMode(13, OUTPUT);
   randomSeed(analogRead(0));
 #endif
+
+  WDT_timings_t config;
+  config.trigger = 10; /* in seconds, 0->128 */
+  config.timeout = 20; /* in seconds, 0->128 */
+  config.callback = myCallback;
+  wdt.begin(config);
 }
 
 void loop()
