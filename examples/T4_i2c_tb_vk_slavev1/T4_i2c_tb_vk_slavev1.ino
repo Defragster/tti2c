@@ -33,6 +33,9 @@ TwoWire *DisplayWire = &Wire1;
 #define _SHT31_port   Wire
 #define _T32_port     Wire
 
+int loopCount = 0;
+uint8_t printTest = 1;
+
 //int idisp9250 = 0;
 //int idisp055 = 1;
 //int idisp080 = 0;
@@ -54,6 +57,9 @@ typedef enum _disp_data_indexes {
 #endif
 #if defined(_use_SHT31)
   DISPLAY_SHT31,
+#endif
+#if defined(_use_T32)
+  DISPLAY_T32,
 #endif
   DISPLAY_FIELD_COUNT
 } DISP_DATA_INDEX_t;
@@ -107,6 +113,50 @@ void printSSD( int xx, int yy, const char * szOut, int tSize ) {
 #endif
 }
 
+void printActiveDevs()
+{
+  Serial.println("============================");
+  Serial.println("I2C Test Board Configuration");
+  Serial.println("============================");
+  Serial.printf("MPU9250\tBNO055\tBNO080\tMB85\tLIDAR\tSHT31\tT32\n");
+  #if defined(_use_9250)
+    Serial.printf("Yes\t");
+  #else 
+    Serial.printf("No\t"); 
+  #endif
+  #if defined(_use_BNO055)
+    Serial.printf("Yes\t");
+  #else 
+    Serial.printf("No\t"); 
+  #endif
+  #if defined(_use_BNO080)
+    Serial.printf("Yes\t");
+  #else 
+    Serial.printf("No\t"); 
+  #endif
+  #if defined(_use_MB85)    
+    Serial.printf("Yes\t");
+  #else 
+    Serial.printf("No\t"); 
+  #endif
+  #if defined(_use_lidar)
+    Serial.printf("Yes\t");
+  #else 
+    Serial.printf("No\t"); 
+  #endif
+  #if defined(_use_SHT31)
+    Serial.printf("Yes\t");
+  #else 
+    Serial.printf("No\t"); 
+  #endif
+  #if defined(_use_T32)
+    Serial.printf("Yes\t");
+  #else 
+    Serial.printf("No\t"); 
+  #endif
+  Serial.println("\n");
+}
+
 /*
    =========================================
    Setup Devices now
@@ -119,9 +169,14 @@ void setup() {
   Scansetup(); // setup() :: Wire_Scanner_all.ino.h
   Scanloop(); // one loop() :: Wire_Scanner_all.ino.h
 
+  printActiveDevs();
+
   ToggleClock0( 1 );
+  Serial.println("==============================");
+  Serial.println("INITIALIZING CONNECTED DEVICES");
+  Serial.println("==============================");
 #if defined( _use_MB85)
-  Serial.println("Starting MB85...");
+  Serial.println("---> Starting MB85...");
 
   mymemory.begin();
   //_MB85_port.setClock(1000000);
@@ -129,22 +184,23 @@ void setup() {
 
 #if defined( _write_init_MB85)
   //---------init data - load array
+  Serial.println("\tWriting data to MB85:");
   byte arraySize = sizeof(MYDATA_t);
   mydata.datastruct.data_0 = true;
-  Serial.print("Data_0: ");
-  if (mydata.datastruct.data_0) Serial.println("true");
-  if (!mydata.datastruct.data_0) Serial.println("false");
+  Serial.print("\tData_0: ");
+  if (mydata.datastruct.data_0) Serial.println("\ttrue");
+  if (!mydata.datastruct.data_0) Serial.println("\tfalse");
   mydata.datastruct.data_1 = 1.3575;
-  Serial.print("Data_1: ");
+  Serial.print("\tData_1: ");
   Serial.println(mydata.datastruct.data_1, DEC);
   mydata.datastruct.data_2 = 314159L;
-  Serial.print("Data_2: ");
+  Serial.print("\tData_2: ");
   Serial.println(mydata.datastruct.data_2, DEC);
   mydata.datastruct.data_3 = 142;
-  Serial.print("Data_3: ");
+  Serial.print("\tData_3: ");
   Serial.println(mydata.datastruct.data_3, DEC);
   mydata.datastruct.data_4 = 0x50;
-  Serial.print("Data_4: 0x");
+  Serial.print("\tData_4: 0x");
   Serial.println(mydata.datastruct.data_4, HEX);
 
   //string test
@@ -154,17 +210,18 @@ void setup() {
   for (uint8_t j = 0; j < string_test.length() + 1; j++) {
     mydata.datastruct.data_5[j] = cbuff[j];
   }
+  Serial.print("\t");
   Serial.println(string_test);
 
-  Serial.println("...... ...... ......");
-  Serial.println("Init Done - array loaded");
-  Serial.println("...... ...... ......");
+  Serial.println("\t...... ...... ......");
+  Serial.println("\tInit Done - array loaded");
+  Serial.println("\t...... ...... ......");
 
   //----------write to FRAM chip
   byte result = mymemory.writeArray(writeaddress, arraySize, mydata.I2CPacket);
-  if (result == 0) Serial.println("Write Done - array loaded in FRAM chip");
-  if (result != 0) Serial.println("Write failed");
-  Serial.println("...... ...... ......");
+  if (result == 0) Serial.println("\tWrite Done - array loaded in FRAM chip");
+  if (result != 0) Serial.println("\tWrite failed");
+  Serial.println("\t...... ...... ......");
 
 #endif //write_init_data
 #endif
@@ -176,18 +233,18 @@ void setup() {
     Serial.println(F("SSD1306 allocation failed"));
   }
   delay(500);
-  printSSD( 0, 0, ("Hello\n"), 2 );
+  printSSD( 0, 0, ("---> Hello SSD1306\n"), 2 );
 
 #endif
 
 #if defined(_use_9250)
   // start communication with IMU
-  printSSD( 0, 0, ("9250 Init"), 1 );
+  printSSD( 0, 0, ("---> 9250 Init"), 1 );
   status = IMU.begin();
   if (status < 0) {
-    Serial.println("IMU 9250 initialization unsuccessful");
-    Serial.println("Check IMU wiring or try cycling power");
-    Serial.print("Status: ");
+    Serial.println("\tIMU 9250 initialization unsuccessful");
+    Serial.println("\tCheck IMU wiring or try cycling power");
+    Serial.print("\tStatus: ");
     Serial.println(status);
     while (1) {}
   }
@@ -204,7 +261,7 @@ void setup() {
 
 #if defined(_use_BNO055)
   /* Initialise the sensor */
-  printSSD( -1, -1, ("055 Init"), 1 );
+  printSSD( -1, -1, ("---> 055 Init"), 1 );
   if (!bno.begin())
   {
     /* There was a problem detecting the BNO055 ... check your connections */
@@ -215,18 +272,18 @@ void setup() {
 
   /* Display the current temperature */
   int8_t temp = bno.getTemp();
-  Serial.print("Current Temperature: ");
+  Serial.print("\tCurrent Temperature: ");
   Serial.print(temp);
   Serial.println(" C");
   Serial.println("");
 
   bno.setExtCrystalUse(true);
 
-  Serial.println("Calibration status values: 0=uncalibrated, 3=fully calibrated");
+  //Serial.println("Calibration status values: 0=uncalibrated, 3=fully calibrated");
 #endif
 
 #if defined(_use_BNO080)
-  printSSD( -1, -1, ("080 Init"), 1 );
+  printSSD( -1, -1, ("---> 080 Init"), 1 );
   delay(200);
   _BNO080_port.begin();
   myIMU.enableDebugging();
@@ -266,14 +323,14 @@ void setup() {
 
   myIMU.enableRotationVector(50); //Send data update every 50ms
 
-  Serial.println(F("Rotation vector enabled"));
-  Serial.println(F("Output in form i, j, k, real, accuracy"));
+  Serial.println(F("\tRotation vector enabled"));
+  //Serial.println(F("\tOutput in form i, j, k, real, accuracy"));
 
   printSSD( -1, -1, ("ialized\n"), 1 );
 #endif
 
 #if defined( _use_lidar)
-  printSSD( -1, -1, ("LL3 Init"), 1 );
+  printSSD( -1, -1, ("---> LL3 Init"), 1 );
   //myLidarLite.begin(0, true); // Set configuration to default and I2C to 400 kHz
   _LIDAR_port.begin();
   //Wire.setClock(400000UL);  //max
@@ -283,7 +340,7 @@ void setup() {
 #endif
 
 #if defined(_use_QKEYPAD) //  0x4b
-  printSSD( -1, -1, ("QKey Init"), 1 );
+  printSSD( -1, -1, ("---> QKey Init"), 1 );
   if (qkeypad.begin(_QKEY_port, _use_QKEYPAD) == false) {  // Note, using begin() like this will use default I2C address, 0x4B.
     printSSD( -1, -1, ("... FAIL"), 1 );
   } else {
@@ -292,7 +349,7 @@ void setup() {
   }
 #endif
 #if defined(_use_QBTN1)
-  printSSD( -1, -1, ("QBtn1 Init"), 1 );
+  printSSD( -1, -1, ("---> QBtn1 Init"), 1 );
   if (qbtn1.begin( _use_QBTN1, _QBTN1_port) == false) {  // Note, using begin() like this will use default I2C address, 0x4B.
     printSSD( -1, -1, ("... FAIL"), 1 );
   } else {
@@ -302,7 +359,7 @@ void setup() {
   }
 #endif
 #if defined(_use_QBTN2)
-  printSSD( -1, -1, ("QBtn2 Init"), 1 );
+  printSSD( -1, -1, ("---> QBtn2 Init"), 1 );
   if (qbtn2.begin(_use_QBTN2, _QBTN2_port) == false) {  // Note, using begin() like this will use default I2C address, 0x4B.
     printSSD( -1, -1, ("... FAIL"), 1 );
   } else {
@@ -313,7 +370,7 @@ void setup() {
 #endif
 
 #if defined(_use_SHT31)
-  printSSD( -1, -1, ("SHT31 Init"), 1 );
+  printSSD( -1, -1, ("---> SHT31 Init"), 1 );
   if (sht31.begin(_use_SHT31) == false) {  // Note, using begin() like this will use default I2C address, 0x4B.
     printSSD( -1, -1, ("... FAIL"), 1 );
   } else {
@@ -322,6 +379,7 @@ void setup() {
 #endif
 
 #if defined(_use_T32)
+  Serial.println("---> T3.2 Connected");
   ET.begin(details(slavedata), &_T32_port);
   pinMode(13, OUTPUT);
   randomSeed(analogRead(0));
@@ -361,29 +419,41 @@ void loop()
       disp_data_index = 0;
   }
 
+  if(loopCount % 20 == 0){
+    Serial.println("=======================================================");
+    Serial.print("==================  LOOP ");
+    Serial.print(loopCount);
+    Serial.println("  ==========================");
+    Serial.println("=======================================================");
+    printTest = 1;
+  } else {
+    printTest = 0;
+  }
+    loopCount = loopCount + 1;
+    
 #if defined( _use_9250)
   loop9250();
-  Serial.println();
+  if(printTest == 1) Serial.println();
 #endif
 
 #if defined(_use_BNO055)
   loop055();
-  Serial.println();
+  if(printTest == 1) Serial.println();
 #endif
 
 #if defined(_use_BNO080)
   loop080();
-  Serial.println();
+  if(printTest == 1) Serial.println();
 #endif
 
 #if defined(_use_lidar)
   looplidar();
-  Serial.println();
+  if(printTest == 1) Serial.println();
 #endif
 
 #if defined( _use_MB85)
   loopMB85();
-  Serial.println();
+  if(printTest == 1) Serial.println();
 #endif
 
 #if defined(_use_QKEYPAD) //  0x4b
@@ -398,11 +468,12 @@ void loop()
 
 #if defined(_use_SHT31)
   loopSHT31();
-  Serial.println();
+  if(printTest == 1) Serial.println();
 #endif
 
 #if defined(_use_T32)
   loopT32();
-  Serial.println();
+  if(printTest == 1) Serial.println();
 #endif
+
 }

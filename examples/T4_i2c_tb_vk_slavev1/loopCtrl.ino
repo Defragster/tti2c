@@ -1,29 +1,29 @@
-
 #if defined(_use_9250)
 void loop9250() {
   // read the sensor
   IMU.readSensor();
-
-  // display the data
-  Serial.print("MPU9250: ");
-  Serial.print(IMU.getAccelX_mss(), 6);
-  Serial.print(", ");
-  Serial.print(IMU.getAccelY_mss(), 6);
-  Serial.print(", ");
-  Serial.print(IMU.getAccelZ_mss(), 6);
-  Serial.print(", ");
-  Serial.print(IMU.getGyroX_rads(), 6);
-  Serial.print(", ");
-  Serial.print(IMU.getGyroY_rads(), 6);
-  Serial.print(", ");
-  Serial.print(IMU.getGyroZ_rads(), 6);
-  Serial.print(", ");
-  Serial.print(IMU.getMagX_uT(), 6);
-  Serial.print(", ");
-  Serial.print(IMU.getMagY_uT(), 6);
-  Serial.print(", ");
-  Serial.println(IMU.getMagZ_uT(), 6);
-
+  if(printTest == 1){
+    Serial.println("============ MPU9250 =============");
+    // display the data
+    Serial.print("MPU9250: ");
+    Serial.print(IMU.getAccelX_mss(), 6);
+    Serial.print(", ");
+    Serial.print(IMU.getAccelY_mss(), 6);
+    Serial.print(", ");
+    Serial.print(IMU.getAccelZ_mss(), 6);
+    Serial.print(", ");
+    Serial.print(IMU.getGyroX_rads(), 6);
+    Serial.print(", ");
+    Serial.print(IMU.getGyroY_rads(), 6);
+    Serial.print(", ");
+    Serial.print(IMU.getGyroZ_rads(), 6);
+    Serial.print(", ");
+    Serial.print(IMU.getMagX_uT(), 6);
+    Serial.print(", ");
+    Serial.print(IMU.getMagY_uT(), 6);
+    Serial.print(", ");
+    Serial.println(IMU.getMagZ_uT(), 6);
+  }
   //Serial.print(", ");
   //Serial.println(IMU.getTemperature_C(),6);
 #if defined ( _use_ssd1306 )
@@ -57,15 +57,17 @@ void loop055(void)
   imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
 
   /* Display the floating point data */
-  Serial.print("BNO055: ");
-  Serial.print("X: ");
-  Serial.print(euler.x());
-  Serial.print(" Y: ");
-  Serial.print(euler.y());
-  Serial.print(" Z: ");
-  Serial.print(euler.z());
-  Serial.print("\n");
-
+  if(printTest == 1){
+    Serial.println("============= BNO055 ===============");
+    Serial.print("BNO055: ");
+    Serial.print("X: ");
+    Serial.print(euler.x());
+    Serial.print(" Y: ");
+    Serial.print(euler.y());
+    Serial.print(" Z: ");
+    Serial.print(euler.z());
+    Serial.print("\n");
+  }
 #if defined ( _use_ssd1306)
   if (disp_data_index == DISPLAY_BNO055) {
     display.clearDisplay();
@@ -122,7 +124,9 @@ void loop080()
     float quatK = myIMU.getQuatK();
     float quatReal = myIMU.getQuatReal();
     float quatRadianAccuracy = myIMU.getQuatRadianAccuracy();
-
+    
+  if(printTest == 1){
+    Serial.println("============= BNO080 ===========");
     Serial.print("BNO080: ");
     Serial.print(quatI, 2);
     Serial.print(F(","));
@@ -132,10 +136,10 @@ void loop080()
     Serial.print(F(","));
     Serial.print(quatReal, 2);
     Serial.print(F(","));
-    Serial.print(quatRadianAccuracy, 2);
-    Serial.print(F(","));
+    //Serial.print(quatRadianAccuracy, 2);
+    //Serial.print(F(","));
     Serial.println();
-
+  }
 #if defined ( _use_ssd1306)
     if (disp_data_index == DISPLAY_BNO080) {
       display.clearDisplay();
@@ -173,10 +177,12 @@ void looplidar()
     lidarliteAddress: Default 0x62. Fill in new address here if changed. See
       operating manual for instructions.
   */
-
-  // Take a measurement with receiver bias correction and print to serial terminal
-  Serial.print("LidarLiteV3: ");
-  Serial.print(myLidarLite.distance());
+  if(printTest == 1){
+    // Take a measurement with receiver bias correction and print to serial terminal
+    Serial.println("============= Lidar V3 ==============");
+    Serial.print("LidarLiteV3: ");
+    Serial.print(myLidarLite.distance());
+  }
   // Take 99 measurements without receiver bias correction and print to serial terminal
   for (int i = 0; i < 99; i++)
   {
@@ -191,21 +197,23 @@ void looplidar()
       if (lld < 10)
         display.print(" cm Too Close");
       display.display();
-      if ( 0 == i )   Scanloop(); // one loop() :: Wire_Scanner_all.ino.h
+      //if ( 0 == i )   Scanloop(); // one loop() :: Wire_Scanner_all.ino.h
     }
 #endif
     static int lldL = 0, jj = 1;
     if ( lld > lldL + 2 || lld < lldL - 2 ) {
       jj++;
       if ( !(jj % 20 ) )
-        Serial.print("\nLidarLiteV3: ");
+        if(printTest == 1) Serial.print("\nLidarLiteV3: ");
       else
-        Serial.print(", ");
-      Serial.print(lld);
+        if(printTest == 1){
+          Serial.print(", ");
+          Serial.print(lld);
+        }
       lldL = lld;
     }
   }
-  Serial.print("\n");
+  if(printTest == 1) Serial.print("\n");
 }
 #endif
 
@@ -215,27 +223,31 @@ void loopMB85()
   //---------read data from memory chip
   byte arraySize = sizeof(MYDATA_t);
   byte result = mymemory.readArray(writeaddress, arraySize, readdata.I2CPacket);
-  if (result == 0) Serial.println("MB85 Read Done - array loaded with read data");
+  
+  if(printTest == 1) Serial.println("=========== MB85 =============");
+  if (result == 0 && printTest == 1) Serial.println("MB85 Read Done - array loaded with read data");
   if (result != 0) Serial.println("MB85 Read failed");
-  Serial.println("...... ...... ......");
+  if(printTest == 1) Serial.println("...... ...... ......");
 
   //---------Send data to serial
-  Serial.print("Data: ");
-  if (readdata.datastruct.data_0) Serial.print("true");
-  if (!readdata.datastruct.data_0) Serial.print("false");
-  Serial.print(", ");
-  Serial.print(readdata.datastruct.data_1, DEC);
-  Serial.print(",  ");
-  Serial.print(readdata.datastruct.data_2, DEC);
-  Serial.print(", ");
-  Serial.print(readdata.datastruct.data_3, DEC);
-  Serial.print(", 0x");
-  Serial.println(readdata.datastruct.data_4, HEX);
-  Serial.print("Data_5: ");
-  for (uint8_t j = 0; j < 19 + 1; j++) {
-    Serial.print(readdata.datastruct.data_5[j]);
+  if(printTest == 1) Serial.print("Data: ");
+  if (readdata.datastruct.data_0 && printTest == 1) Serial.print("true");
+  if (!readdata.datastruct.data_0 && printTest == 1) Serial.print("false");
+  if(printTest == 1){
+    Serial.print(", ");
+    Serial.print(readdata.datastruct.data_1, DEC);
+    Serial.print(",  ");
+    Serial.print(readdata.datastruct.data_2, DEC);
+    Serial.print(", ");
+    Serial.print(readdata.datastruct.data_3, DEC);
+    Serial.print(", 0x");
+    Serial.println(readdata.datastruct.data_4, HEX);
+    Serial.print("Data_5: ");
+    for (uint8_t j = 0; j < 19 + 1; j++) {
+      Serial.print(readdata.datastruct.data_5[j]);
+    }
+    Serial.println();
   }
-  Serial.println();
   /*
     Serial.println("...... ...... ......");
     Serial.println("Read Write test done - check data if successfull");
@@ -306,7 +318,8 @@ void loopQPad()
   else if (button != 0)
   {
     if (button == '#') Serial.println();
-    else if (button == '*') Serial.print(" ");
+    //else if (button == '*') Serial.print(" ");
+    else if  (button == '*') Scanloop();
     else {
       Serial.print("BUTTON PUSHED: "); Serial.println(button);
       Serial.println();
@@ -325,14 +338,15 @@ void loopSHT31()
   float t = sht31.readTemperature();
   float h = sht31.readHumidity();
 
+  if(printTest == 1) Serial.println("============= SHT31 =============");
   if (! isnan(t)) {  // check if 'is not a number'
-    Serial.print("Temp *C = "); Serial.println(t);
+    if(printTest == 1) {Serial.print("Temp *C = "); Serial.print(t);}
   } else {
     Serial.println("Failed to read temperature");
   }
 
   if (! isnan(h)) {  // check if 'is not a number'
-    Serial.print("Hum. % = "); Serial.println(h);
+    if(printTest == 1) {Serial.print(", Hum. % = "); Serial.println(h);}
   } else {
     Serial.println("Failed to read humidity");
   }
@@ -370,7 +384,9 @@ void loopT32()
     digitalWrite(13, LOW);
     delay(slavedata.pause * 100);
   }
-
-  Serial.printf("Sending Data to T3.2 ====> \n", slavedata.blinks);
+  if(printTest == 1) {
+    Serial.println("============ T32 Slave ===============");
+    Serial.printf("Sending Data to T3.2 ====> \n", slavedata.blinks);
+  }
 }
 #endif
