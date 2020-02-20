@@ -1,7 +1,7 @@
 # tti2c
 Teensy tested i2c devices
 
-1.	Lidar Lite v3 (LIDARLITE_ADDR_DEFAULT 0x62): https://github.com/garmin/LIDARLite_Arduino_Library/
+1.	Lidar Lite v3 (LIDARLITE_ADDR_DEFAULT 0x62): https://github.com/garmin/LIDARLite_Arduino_Library/ (Note Modifed lib included in repository)
 2.	BNO080 (BNO080_DEFAULT_ADDRESS 0x4B): https://github.com/sparkfun/SparkFun_BNO080_Arduino_Library
 3.	BNO055 (BNO055_ADDRESS_A 0x29): https://github.com/adafruit/Adafruit_BNO055
 3.1	Also #include <Adafruit_Sensor.h> : https://github.com/adafruit/Adafruit_Sensor
